@@ -9,6 +9,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Utf8Json.AspNetCoreMvcFormatter;
 using Utf8Json.Resolvers;
 using Utf8Json;
+using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using AspNet.Security.OpenIdConnect.Primitives;
 using System.Security.Claims;
@@ -44,6 +45,7 @@ namespace Beatrice.Web
             services.AddScoped<BeatriceOpenIdConnectServerProvider>();
             services.Configure<BeatriceSecurityConfiguration>(Configuration.GetSection("Beatrice:Security"));
 
+//	    services.AllowSynchronousIO = true;
             services.AddAuthentication(options =>
             {
                 options.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
@@ -70,9 +72,19 @@ namespace Beatrice.Web
                 {
                     option.OutputFormatters.Clear();
                     option.InputFormatters.Clear();
+		    option.EnableEndpointRouting = false;
                     option.OutputFormatters.Add(new JsonOutputFormatter(BeatriceCompositeResolver.Instance));
                     option.InputFormatters.Add(new JsonInputFormatter(BeatriceCompositeResolver.Instance));
                 });
+	// If using IIS:
+            services.Configure<IISServerOptions>(options =>
+            {
+                options.AllowSynchronousIO = true;
+            });
+	    services.Configure<KestrelServerOptions>(options =>
+            {
+                options.AllowSynchronousIO = true;
+            });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -86,6 +98,7 @@ namespace Beatrice.Web
             else
             {
                 app.UseExceptionHandler("/Home/Error");
+                app.AllowStatusCode404Response = true;
             }
 
             app.UseAuthentication();

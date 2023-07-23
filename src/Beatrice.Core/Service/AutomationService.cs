@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Options;
+//using CliWrap;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -95,11 +96,11 @@ namespace Beatrice.Service
                     {
                         Ids = successIds.ToArray(),
                         Status = "SUCCESS",
-                        //States = new Dictionary<string, object>
-                        //{
-                        //    { "on", true },
-                        //    { "online", true },
-                        //}
+                        States = new Dictionary<string, object>
+                        {
+                            { "on", true },
+                            { "online", true },
+                        }
                     });
                 }
 
@@ -143,14 +144,25 @@ namespace Beatrice.Service
             var state = new Dictionary<string, object>();
             if (_deviceById[id].WillReportState)
             {
-                //foreach (var support in _deviceById[id].Features.OfType<IDeviceSupportWithState>())
-                //{
-                //    var state2 = await support.GetStateAsync(_deviceById[id].Definition);
-                //    foreach (var keyValue in state2)
-                //    {
-                //        state[keyValue.Key] = keyValue.Value;
-                //    }
-                //}
+		 // https://stackoverflow.com/questions/23679283/c-sharp-execute-a-terminal-command-in-linux
+//		var result = await Cli
+//                  .Wrap("/bin/bash")
+//                  .WithArguments(" /home/pi/SMART_HOME/Scripts/report_device_state.sh " + id)
+//                  .ExecuteBufferedAsync();
+
+//		if (result.ExitCode != 0)
+//			state["on"] = false;
+//		else
+//			state["on"] = true;
+
+//                foreach (var support in _deviceById[id].Features.OfType<IDeviceSupportWithState>())
+//                {
+//                    var state2 = await support.GetStateAsync(_deviceById[id].Definition);
+//                    foreach (var keyValue in state2)
+//                    {
+//                        state[keyValue.Key] = keyValue.Value;
+//                    }
+//                }
             }
 
             return state;

@@ -29,7 +29,8 @@ namespace Beatrice.Device.Features
             _logger.LogInformation("WebHookSimpleOnOff: " + endpoint.Url);
 
             var contentType = String.IsNullOrWhiteSpace(endpoint.ContentType) ? endpoint.ContentType : DefaultContentType;
-            await new HttpClient().PostAsync(endpoint.Url, new StringContent(endpoint.Body ?? "", new UTF8Encoding(false), contentType));
+//            await new HttpClient().PostAsync(endpoint.Url, new StringContent(endpoint.Body ?? "", new UTF8Encoding(false), contentType));
+            await new HttpClient().GetAsync(endpoint.Url);
         }
     }
 
