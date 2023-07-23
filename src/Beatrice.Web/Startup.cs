@@ -72,7 +72,7 @@ namespace Beatrice.Web
                 {
                     option.OutputFormatters.Clear();
                     option.InputFormatters.Clear();
-		    option.EnableEndpointRouting = false;
+		            option.EnableEndpointRouting = false;
                     option.OutputFormatters.Add(new JsonOutputFormatter(BeatriceCompositeResolver.Instance));
                     option.InputFormatters.Add(new JsonInputFormatter(BeatriceCompositeResolver.Instance));
                 });
@@ -98,7 +98,6 @@ namespace Beatrice.Web
             else
             {
                 app.UseExceptionHandler("/Home/Error");
-                app.AllowStatusCode404Response = true;
             }
 
             app.UseAuthentication();
