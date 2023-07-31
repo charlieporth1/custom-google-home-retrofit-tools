@@ -59,11 +59,11 @@ jobs:
 
     - uses: "marvinpinto/action-automatic-releases@latest"
     - name: Release
-        with:
-          repo_token: "${{ secrets.GITHUB_TOKEN }}"
-          automatic_release_tag: ${{ env.RELEASE_VERSION }}
-          prerelease: true
-          title: "Automatic Release ${{ env.RELEASE_VERSION }}"
-          files: |
-            LICENSE.txt
-            *.zip
+      with:
+        repo_token: "${{ secrets.GITHUB_TOKEN }}"
+        automatic_release_tag: ${{ env.RELEASE_VERSION }}
+        prerelease: true
+        title: "Automatic Release ${{ env.RELEASE_VERSION }}"
+        files: |
+          LICENSE.txt
+          *.zip
