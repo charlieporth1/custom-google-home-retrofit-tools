@@ -28,6 +28,7 @@ jobs:
     name: Build 
     runs-on: ubuntu-latest
     env:
+      TARGET: linux-arm
       DOTNET_CLI_TELEMETRY_OPTOUT: 1
       DOTNET_SKIP_FIRST_TIME_EXPERIENCE: 1
       DOTNET_NOLOGO: true
@@ -51,10 +52,10 @@ jobs:
     - run: ls
 
     - name: Restore
-      run: cd src/Beatrice.Web; dotnet restore
+      run: cd src/Beatrice.Web; dotnet restore --runtime ${{ env.TARGET }}
 
     - name: Build
-      run: cd src/Beatrice.Web; dotnet build --configuration Release --verbosity=n --no-restore --self-contained --runtime linux-arm
+      run: cd src/Beatrice.Web; dotnet build --configuration Release --verbosity=n --no-restore --self-contained --runtime ${{ env.TARGET }}
  
     - name: Test
       run: cd src/Beatrice.Web; dotnet test
