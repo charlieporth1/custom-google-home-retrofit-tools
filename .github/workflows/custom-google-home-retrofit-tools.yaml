@@ -58,7 +58,6 @@ jobs:
       run: dotnet test
 
     - uses: "marvinpinto/action-automatic-releases@latest"
-    - name: Release
       with:
         repo_token: "${{ secrets.GITHUB_TOKEN }}"
         automatic_release_tag: ${{ env.RELEASE_VERSION }}
