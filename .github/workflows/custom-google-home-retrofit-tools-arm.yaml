@@ -1,0 +1,74 @@
+name: "Build"
+
+on:
+  push:
+    branches:
+      - master
+    paths-ignore:
+      - '**/*.md'
+      - '**/*.gitignore'
+      - '**/*.gitattributes'
+  pull_request:
+    branches:
+      - master
+    paths-ignore:
+      - '**/*.md'
+      - '**/*.gitignore'
+      - '**/*.gitattributes'
+  workflow_dispatch:
+    branches:
+      - master
+    paths-ignore:
+      - '**/*.md'
+      - '**/*.gitignore'
+      - '**/*.gitattributes'
+      
+jobs:
+  build:
+    name: Build 
+    runs-on: ubuntu-latest
+    env:
+      TARGET: linux-arm
+      DOTNET_CLI_TELEMETRY_OPTOUT: 1
+      DOTNET_SKIP_FIRST_TIME_EXPERIENCE: 1
+      DOTNET_NOLOGO: true
+      DOTNET_GENERATE_ASPNET_CERTIFICATE: false
+      DOTNET_ADD_GLOBAL_TOOLS_TO_PATH: false
+      DOTNET_MULTILEVEL_LOOKUP: 0
+      DOTNET_SYSTEM_CONSOLE_ALLOW_ANSI_COLOR_REDIRECTION: true
+      TERM: xterm
+
+    steps:
+    - uses: actions/checkout@v3
+      
+    - name: Setup .NET SDK
+      uses: actions/setup-dotnet@v3
+      with:
+        dotnet-version: 7.0.x
+
+    - name: New Version
+      run: export RELEASE_VERSION=$(curl --silent "https://api.github.com/repos/charlieporth1/custom-google-home-retrofit-tools/tags" | jq -r '.[0].name' | awk -F'v' '{print $2}' | awk -F. '{print $3}'); echo "RELEASE_VERSION=1.0.$(( $RELEASE_VERSION + 1 ))-armhf" >> $GITHUB_ENV
+
+    - run: ls
+
+    - name: Restore
+      run: cd src/Beatrice.Web; dotnet restore --runtime ${{ env.TARGET }}
+
+    - name: Build
+      run: cd src/Beatrice.Web; dotnet build --configuration Release --verbosity=n --no-restore --self-contained --runtime ${{ env.TARGET }}
+ 
+    - name: Test
+      run: cd src/Beatrice.Web; dotnet test
+
+    - name: Package
+      run: zip -r9 Release.zip src/Beatrice.Web/bin/Release/netcoreapp7.0/linux-arm/
+  
+    - uses: "marvinpinto/action-automatic-releases@latest"
+      with:
+        repo_token: "${{ secrets.GITHUB_TOKEN }}"
+        automatic_release_tag: ${{ env.RELEASE_VERSION }}
+        prerelease: true
+        title: "Automatic Release ${{ env.RELEASE_VERSION }}"
+        files: |
+          LICENSE.txt
+          *.zip
