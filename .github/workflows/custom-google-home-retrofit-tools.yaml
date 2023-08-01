@@ -28,7 +28,7 @@ jobs:
     name: Build 
     runs-on: ubuntu-latest
     env:
-      TARGET: linux-arm64
+      TARGET: linux-arm
       DOTNET_CLI_TELEMETRY_OPTOUT: 1
       DOTNET_SKIP_FIRST_TIME_EXPERIENCE: 1
       DOTNET_NOLOGO: true
@@ -47,7 +47,7 @@ jobs:
         dotnet-version: 7.0.x
 
     - name: New Version
-      run: export RELEASE_VERSION=$(curl --silent "https://api.github.com/repos/charlieporth1/custom-google-home-retrofit-tools/tags" | jq -r '.[0].name' | awk -F'v' '{print $2}' | awk -F. '{print $3}'); echo "RELEASE_VERSION=1.0.$(( $RELEASE_VERSION + 1 ))-arm64" >> $GITHUB_ENV
+      run: export RELEASE_VERSION=$(curl --silent "https://api.github.com/repos/charlieporth1/custom-google-home-retrofit-tools/tags" | jq -r '.[0].name' | awk -F'v' '{print $2}' | awk -F. '{print $3}'); echo "RELEASE_VERSION=1.0.$(( $RELEASE_VERSION + 1 ))" >> $GITHUB_ENV
 
     - run: ls
 
@@ -61,8 +61,30 @@ jobs:
       run: cd src/Beatrice.Web; dotnet test
 
     - name: Package
-      run: zip -r9 Release.zip src/Beatrice.Web/bin/Release/netcoreapp7.0/linux-arm/
+      run: zip -r9 Release-${{ env.TARGET }}.zip src/Beatrice.Web/bin/Release/netcoreapp7.0/${{ env.TARGET }}/
   
+    - name: Setup .NET SDK
+      uses: actions/setup-dotnet@v3
+      with:
+        dotnet-version: 7.0.x
+
+    - name: New Target
+      run: export TARGET="linux-arm64" >> $GITHUB_ENV
+
+    - run: ls
+
+    - name: Restore
+      run: cd src/Beatrice.Web; dotnet restore --runtime ${{ env.TARGET }}
+
+    - name: Build
+      run: cd src/Beatrice.Web; dotnet build --configuration Release --verbosity=n --no-restore --self-contained --runtime ${{ env.TARGET }}
+ 
+    - name: Test
+      run: cd src/Beatrice.Web; dotnet test
+
+    - name: Package
+      run: zip -r9 Release-${{ env.TARGET }}.zip src/Beatrice.Web/bin/Release/netcoreapp7.0/${{ env.TARGET }}/
+
     - uses: "marvinpinto/action-automatic-releases@latest"
       with:
         repo_token: "${{ secrets.GITHUB_TOKEN }}"
