@@ -9,7 +9,6 @@ using Beatrice.Device;
 using Beatrice.Request;
 using Beatrice.Response;
 using Microsoft.Extensions.Logging;
-using Microsoft.Reporting.WinForms; // or Microsoft.Reporting.WebForms
 
 namespace Beatrice.Service
 {
