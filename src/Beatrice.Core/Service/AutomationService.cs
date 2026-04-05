@@ -8,6 +8,7 @@ using Beatrice.Device;
 using Beatrice.Request;
 using Beatrice.Response;
 using Microsoft.Extensions.Logging;
+using System;
 
 namespace Beatrice.Service
 {
