@@ -6,7 +6,8 @@ namespace Beatrice.Response
     {
         public class QueryActionPayload
         {
-            public Dictionary<string, object>[] Devices { get; set; }
+            //public Dictionary<string, object>[] Devices { get; set; }
+		public Dictionary<string, Dictionary<string, object>> Devices { get; set; }
         }
     }
 }

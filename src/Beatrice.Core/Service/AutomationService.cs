@@ -20,8 +20,8 @@ namespace Beatrice.Service
         // can return real state. Previously there was no state store at all,
         // causing QUERY to return an empty dict and the test suite to mark
         // devices as offline.
-        private readonly ConcurrentDictionary<string, object>[] _deviceStates;
-        //private readonly ConcurrentDictionary<string, Dictionary<string, object>> _deviceStates;
+        //private readonly ConcurrentDictionary<string, object>[] _deviceStates;
+        private readonly ConcurrentDictionary<string, Dictionary<string, object>> _deviceStates;
 
         public string AgentUserId { get; set; } = "agentUserId.0";
 
