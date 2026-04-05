@@ -1,5 +1,4 @@
 using Microsoft.Extensions.Options;
-using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,7 +8,6 @@ using Beatrice.Device;
 using Beatrice.Request;
 using Beatrice.Response;
 using Microsoft.Extensions.Logging;
-using Microsoft.Build.Execution;
 
 namespace Beatrice.Service
 {
@@ -116,7 +114,7 @@ namespace Beatrice.Service
 
                                 // BUG FIX 3: Update in-memory state so QUERY
                                 // returns the correct state after EXECUTE.
-                                var newState = BuildStateFromExecution(device.Id, exec);
+                                var newState = BuildStateFromExecution(device.Id, (ActionCommand)exec);
                                 _deviceStates[device.Id] = newState;
 
                                 successIds.Add(device.Id);
@@ -215,8 +213,8 @@ namespace Beatrice.Service
         }
 
         // Build a new state dictionary reflecting the result of an execution.
-        // Handles OnOff; other traits can be added here as needed.
-        private Dictionary<string, object> BuildStateFromExecution(string deviceId, ExecutionItem exec)
+        // Uses the strongly-typed ActionCommand subclasses — no Dictionary<string,object> guessing.
+        private Dictionary<string, object> BuildStateFromExecution(string deviceId, ActionCommand exec)
         {
             var current = _deviceStates.TryGetValue(deviceId, out var existing)
                 ? new Dictionary<string, object>(existing)
@@ -224,19 +222,55 @@ namespace Beatrice.Service
 
             current["online"] = true;
 
-            switch (exec.Command)
+            switch (exec)
             {
-                case "action.devices.commands.OnOff":
-                    if (exec.Params != null && exec.Params.TryGetValue("on", out var onVal))
-                        current["on"] = Convert.ToBoolean(onVal);
+                case ActionCommand.OnOff onOff:
+                    current["on"] = onOff.On;
                     break;
 
-                case "action.devices.commands.BrightnessAbsolute":
-                    if (exec.Params != null && exec.Params.TryGetValue("brightness", out var brightness))
-                        current["brightness"] = Convert.ToInt32(brightness);
+                case ActionCommand.BrightnessAbsolute brightness:
+                    current["brightness"] = brightness.Brightness;
                     break;
 
-                // Add further command mappings here as new traits are implemented.
+                case ActionCommand.ColorAbsolute color:
+                    if (color.SpectrumRGB.HasValue)
+                        current["color"] = new Dictionary<string, object> { { "spectrumRgb", color.SpectrumRGB.Value } };
+                    else if (color.Temperature.HasValue)
+                        current["color"] = new Dictionary<string, object> { { "temperatureK", color.Temperature.Value } };
+                    break;
+
+                case ActionCommand.StartStop startStop:
+                    current["isRunning"] = startStop.Start;
+                    break;
+
+                case ActionCommand.PauseUnpause pauseUnpause:
+                    current["isPaused"] = pauseUnpause.Pause;
+                    break;
+
+                case ActionCommand.ActivateScene activateScene:
+                    // Scenes are stateless; nothing to track.
+                    break;
+
+                case ActionCommand.SetToggles setToggles:
+                    if (setToggles.UpdateToggleSettings != null)
+                        foreach (var kv in setToggles.UpdateToggleSettings)
+                            current[$"toggle_{kv.Key}"] = kv.Value;
+                    break;
+
+                case ActionCommand.ThermostatTemperatureSetPoint setpoint:
+                    current["thermostatTemperatureSetpoint"] = setpoint.ThermostatTemperatureSetpoint;
+                    break;
+
+                case ActionCommand.ThermostatSetMode setMode:
+                    current["thermostatMode"] = setMode.ThermostatMode;
+                    break;
+
+                // Generic fallback for any command not covered above.
+                case ActionCommand.Generic generic:
+                    if (generic.Params != null)
+                        foreach (var kv in generic.Params)
+                            current[kv.Key] = kv.Value;
+                    break;
             }
 
             return current;
